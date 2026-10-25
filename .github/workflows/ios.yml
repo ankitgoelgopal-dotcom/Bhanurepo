@@ -16,10 +16,16 @@ jobs:
       - name: Build (unsigned)
         working-directory: ios
         run: |
-          set -o pipefail
+          set +e
           xcodebuild -project FreeBrowser.xcodeproj -scheme FreeBrowser -configuration Release \
             -sdk iphoneos -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build > build.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            grep -E "error|fatal|Unable|cannot|not found" build.log | sort -u | head -15 | while IFS= read -r l; do echo "::error::${l:0:400}"; done
+            tail -5 build.log | while IFS= read -r l; do echo "::warning::${l:0:300}"; done
+          fi
+          exit $rc
       - name: Package IPA
         run: |
           cd ios/build/Build/Products/Release-iphoneos
