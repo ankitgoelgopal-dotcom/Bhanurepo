@@ -23,3 +23,6 @@ Install: `adb install app-release.apk`, or copy the APK to your phone and open i
 
 ## iPhone (.ipa)
 `ios/` is a SwiftUI/WKWebView port. The *Build iOS IPA* workflow produces an **unsigned** `FreeBrowser.ipa` (artifact `FreeBrowser-ipa`); sign and install it with AltStore or Sideloadly. iOS cannot rewrite response headers (X-Frame-Options/CSP/CORS), so that feature is Android-only; extensions are user scripts with match patterns.
+
+## Windows (.exe)
+`desktop/` is an Electron (Chromium) app. The *Build Windows EXE* workflow produces a portable, unsigned `FreeBrowser.exe` (artifact `FreeBrowser-exe`). It strips X-Frame-Options/CSP/COOP/COEP/CORP, adds CORS headers, supports custom request headers, tabs, and unpacked Chrome extensions (partial API support).

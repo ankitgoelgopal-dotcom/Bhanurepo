@@ -1,0 +1,102 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#1e1e1e;color:#eee;font:14px system-ui,sans-serif;overflow:hidden}
+#tabs{height:38px;display:flex;align-items:flex-end;gap:2px;padding:6px 6px 0;background:#141414;-webkit-app-region:drag}
+.tab{-webkit-app-region:no-drag;display:flex;align-items:center;gap:6px;width:190px;height:32px;padding:0 8px;background:#2a2a2a;border-radius:8px 8px 0 0;cursor:default}
+.tab.on{background:#1e1e1e}.tab span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tab b{font-weight:400;opacity:.6;padding:0 4px}.tab b:hover{opacity:1;background:#444;border-radius:4px}
+#plus{-webkit-app-region:no-drag}
+#bar{height:50px;display:flex;align-items:center;gap:6px;padding:0 8px;background:#1e1e1e}
+button{background:#2a2a2a;color:#eee;border:0;border-radius:6px;padding:7px 11px;font-size:15px;cursor:pointer}
+button:hover:not(:disabled){background:#3a3a3a}button:disabled{opacity:.35}
+#addr{flex:1;padding:9px 14px;border:1px solid #444;border-radius:18px;background:#2a2a2a;color:#eee;font-size:14px;outline:none}
+#addr:focus{border-color:#6ea0ff}
+#panel{display:none;position:fixed;top:88px;left:0;right:0;bottom:0;background:#1e1e1e;overflow:auto;padding:20px 24px}
+#panel label{display:block;margin:14px 0 4px;color:#aaa}
+#panel input[type=text],#panel textarea{width:100%;max-width:640px;padding:8px;background:#2a2a2a;border:1px solid #444;color:#eee;border-radius:6px}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0}.warn{color:#e0a050;font-size:12px}
+.ext{display:flex;align-items:center;gap:10px;max-width:640px;padding:8px;background:#2a2a2a;border-radius:6px;margin:6px 0}.ext div{flex:1;overflow:hidden}
+</style></head><body>
+<div id="tabs"></div>
+<div id="bar">
+  <button id="back">&#9664;</button><button id="fwd">&#9654;</button><button id="rel">&#10227;</button><button id="home">&#8962;</button>
+  <input id="addr" placeholder="Search or enter address" spellcheck="false" autocomplete="off">
+  <button id="gear">&#9881;</button>
+</div>
+<div id="panel">
+  <h2 style="margin-top:0">Settings</h2>
+  <label>Home page</label><input type="text" id="s-home">
+  <label>Search URL (%s = query)</label><input type="text" id="s-search">
+  <div class="row"><input type="checkbox" id="s-bypass"><span>Strip X-Frame-Options / CSP / COOP / COEP / CORP and allow cross-origin (CORS) requests</span></div>
+  <div class="row"><input type="checkbox" id="s-certs"><span>Allow invalid certificates</span></div>
+  <div class="warn">Both options remove browser protections. Only use them on sites you trust.</div>
+  <label>Custom request headers (Name: value, one per line, sent with every request)</label>
+  <textarea id="s-headers" rows="4"></textarea>
+  <h3>Extensions</h3>
+  <div id="exts"></div>
+  <button id="addext">Add unpacked extension folder…</button>
+  <div class="warn" style="margin-top:6px">Chrome extensions are supported partially (content scripts and many APIs work; some browser-UI APIs do not).</div>
+  <p><button id="save">Save &amp; close</button></p>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+let st = { tabs: [], active: 0 }, panelOpen = false, cfg = {};
+const act = () => st.tabs.find(t => t.id === st.active);
+
+function render() {
+  const bar = $('#tabs'); bar.textContent = '';
+  for (const t of st.tabs) {
+    const d = document.createElement('div'); d.className = 'tab' + (t.id === st.active ? ' on' : '');
+    const s = document.createElement('span'); s.textContent = (t.loading ? '… ' : '') + t.title;
+    const x = document.createElement('b'); x.textContent = '×';
+    x.onclick = e => { e.stopPropagation(); api.invoke('closeTab', t.id); };
+    d.onclick = () => { closePanel(); api.invoke('selectTab', t.id); };
+    d.append(s, x); bar.append(d);
+  }
+  const p = document.createElement('button'); p.id = 'plus'; p.textContent = '+'; p.onclick = () => { closePanel(); api.invoke('newTab'); };
+  bar.append(p);
+  const a = act();
+  if (a && document.activeElement !== $('#addr')) $('#addr').value = a.url;
+  $('#back').disabled = !st.canBack; $('#fwd').disabled = !st.canForward;
+}
+api.on('state', s => { st = s; render(); });
+api.on('focus-address', () => { closePanel(); $('#addr').focus(); $('#addr').select(); });
+
+$('#addr').addEventListener('keydown', e => { if (e.key === 'Enter') { closePanel(); api.invoke('go', e.target.value); e.target.blur(); } });
+$('#back').onclick = () => api.invoke('back'); $('#fwd').onclick = () => api.invoke('forward');
+$('#rel').onclick = () => api.invoke('reload'); $('#home').onclick = () => { closePanel(); api.invoke('home'); };
+document.addEventListener('keydown', e => {
+  if (!e.ctrlKey) return; const k = e.key.toLowerCase();
+  if (k === 'l') { e.preventDefault(); $('#addr').focus(); $('#addr').select(); }
+  else if (k === 't') { e.preventDefault(); api.invoke('newTab'); }
+  else if (k === 'w') { e.preventDefault(); const a = act(); if (a) api.invoke('closeTab', a.id); }
+});
+
+function fill() {
+  $('#s-home').value = cfg.home; $('#s-search').value = cfg.search; $('#s-headers').value = cfg.headers;
+  $('#s-bypass').checked = cfg.bypass; $('#s-certs').checked = cfg.allowBadCerts;
+  const box = $('#exts'); box.textContent = '';
+  if (!cfg.extensions.length) box.textContent = 'No extensions installed.';
+  for (const e of cfg.extensions) {
+    const row = document.createElement('div'); row.className = 'ext';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = e.enabled;
+    cb.onchange = async () => { cfg = await api.invoke('ext:toggle', e.path, cb.checked); fill(); };
+    const info = document.createElement('div');
+    info.textContent = (e.name || e.path) + (e.error ? '  — error: ' + e.error : '');
+    const del = document.createElement('button'); del.textContent = 'Remove';
+    del.onclick = async () => { cfg = await api.invoke('ext:remove', e.path); fill(); };
+    row.append(cb, info, del); box.append(row);
+  }
+}
+async function openPanel() { cfg = await api.invoke('settings:get'); fill(); panelOpen = true; $('#panel').style.display = 'block'; api.invoke('view:visible', false); }
+function closePanel() { if (!panelOpen) return; panelOpen = false; $('#panel').style.display = 'none'; api.invoke('view:visible', true); }
+$('#gear').onclick = () => panelOpen ? closePanel() : openPanel();
+$('#addext').onclick = async () => { cfg = await api.invoke('ext:add'); fill(); };
+$('#save').onclick = async () => {
+  await api.invoke('settings:set', { home: $('#s-home').value, search: $('#s-search').value, headers: $('#s-headers').value,
+    bypass: $('#s-bypass').checked, allowBadCerts: $('#s-certs').checked });
+  closePanel();
+};
+</script></body></html>
