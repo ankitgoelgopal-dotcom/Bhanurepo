@@ -2,7 +2,7 @@ name: FreeBrowser
 options:
   bundleIdPrefix: com.example
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "26.0"
 targets:
   FreeBrowser:
     type: application
