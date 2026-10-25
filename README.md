@@ -26,3 +26,6 @@ Install: `adb install app-release.apk`, or copy the APK to your phone and open i
 
 ## Windows (.exe)
 `desktop/` is an Electron (Chromium) app. The *Build Windows EXE* workflow produces a portable, unsigned `FreeBrowser.exe` (artifact `FreeBrowser-exe`). It strips X-Frame-Options/CSP/COOP/COEP/CORP, adds CORS headers, supports custom request headers, tabs, and unpacked Chrome extensions (partial API support).
+
+## Linux (AppImage)
+The *Build Linux AppImage* workflow builds `FreeBrowser.AppImage` from `desktop/`. Run: `chmod +x FreeBrowser.AppImage && ./FreeBrowser.AppImage`. On Ubuntu 22.04+ install `libfuse2`; if it fails with a sandbox error on Ubuntu 23.10+, try `./FreeBrowser.AppImage --no-sandbox`.
