@@ -11,4 +11,4 @@ Security: this server answers anyone who finds it. Restrict port 8080 with a fir
 ## Running on your Android phone (no laptop)
 Install **Termux from F-Droid** (not the Play Store version), then run:
 `pkg install -y curl && curl -fsSL https://raw.githubusercontent.com/ankitgoelgopal-dotcom/Bhanurepo/main/server/termux-setup.sh | bash`
-Start it with `~/start-search.sh` and set the app's Search server URL to `http://127.0.0.1:8888`.
+Start it in the background with `~/start-bg.sh` (logs in `~/search.log`, stop with `pkill -f searx.webapp`) and set the app's Search server URL to `http://127.0.0.1:8888`.

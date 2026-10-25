@@ -32,5 +32,13 @@ cd ~/searxng
 SEARXNG_SETTINGS_PATH=~/searxng-settings.yml python -m searx.webapp
 SH
 chmod +x ~/start-search.sh
-echo "Done. Start the server with: ~/start-search.sh"
+
+cat > ~/start-bg.sh <<'SH'
+#!/data/data/com.termux/files/usr/bin/bash
+pkill -f searx.webapp 2>/dev/null
+nohup ~/start-search.sh > ~/search.log 2>&1 &
+echo "Search server started in background"
+SH
+chmod +x ~/start-bg.sh
+echo "Done. Start the server in the background with: ~/start-bg.sh"
 echo "Then in the app set Search server URL to: http://127.0.0.1:8888"
