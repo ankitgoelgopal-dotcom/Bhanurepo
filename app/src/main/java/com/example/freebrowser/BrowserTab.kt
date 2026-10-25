@@ -8,10 +8,12 @@ import android.webkit.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import java.net.URLEncoder
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
+const val DEFAULT_SEARCH = "https://searxng.site"
 const val INTERNAL = "https://mysearch.local/"
 
 class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: ExtensionManager) {
@@ -47,23 +49,11 @@ class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: Extens
         else search(t, 1)
     }
 
+    /** Routes a text query to a public SearXNG instance (Settings can override the base URL). */
     fun search(q: String, page: Int) {
-        val server = prefs.searchServer.trim().trimEnd('/')
-        if (server.isEmpty()) { showStart("Set your search server URL in Settings first."); return }
-        label = q; url = q; title = q
-        Thread {
-            val html = try {
-                val u = "$server/search?q=${Uri.encode(q)}&format=json&pageno=$page"
-                val body = api.newCall(Request.Builder().url(u).build()).execute().use {
-                    if (!it.isSuccessful) throw RuntimeException("server returned HTTP ${it.code}")
-                    it.body!!.string()
-                }
-                Pages.results(prefs.appName, q, page, JSONObject(body))
-            } catch (e: Exception) {
-                Pages.start(prefs.appName, "Search failed: ${e.message}")
-            }
-            web.post { web.loadDataWithBaseURL(INTERNAL, html, "text/html", "utf-8", null) }
-        }.start()
+        val base = prefs.searchServer.trim().trimEnd('/').ifEmpty { DEFAULT_SEARCH }
+        val encoded = URLEncoder.encode(q, "UTF-8")
+        web.loadUrl("$base/search?q=$encoded" + if (page > 1) "&pageno=$page" else "")
     }
 
     inner class Bridge {

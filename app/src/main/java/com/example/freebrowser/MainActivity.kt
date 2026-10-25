@@ -147,7 +147,7 @@ fun SettingsScreen(prefs: Prefs, ext: ExtensionManager, onBack: () -> Unit) {
                 }
             }
             item { OutlinedTextField(home, { home = it; prefs.home = it }, label = { Text("Home page") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
-            item { OutlinedTextField(server, { server = it; prefs.searchServer = it }, label = { Text("Search server URL (SearXNG)") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
+            item { OutlinedTextField(server, { server = it; prefs.searchServer = it }, label = { Text("Search engine URL (blank = searxng.site)") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
             item { OutlinedTextField(appName, { appName = it; prefs.appName = it }, label = { Text("Browser name") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
             item {
                 OutlinedTextField(headers, { headers = it; prefs.headersText = it },
