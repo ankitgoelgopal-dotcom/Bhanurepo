@@ -29,3 +29,6 @@ Install: `adb install app-release.apk`, or copy the APK to your phone and open i
 
 ## Linux (AppImage)
 The *Build Linux AppImage* workflow builds `FreeBrowser.AppImage` from `desktop/`. Run: `chmod +x FreeBrowser.AppImage && ./FreeBrowser.AppImage`. On Ubuntu 22.04+ install `libfuse2`; if it fails with a sandbox error on Ubuntu 23.10+, try `./FreeBrowser.AppImage --no-sandbox`.
+
+## LG webOS TV (2019 / webOS 4.5)
+`webos/` is a web-app launcher (address bar, search via DuckDuckGo, editable tiles) packaged as an `.ipk` by the *Build webOS IPK* workflow. It navigates the TV's Chromium (v53) to the site you choose; Back returns to the launcher. Header stripping and extensions are not possible on webOS. Install with the LG Developer Mode app + `ares-install`, or webOS Dev Manager.

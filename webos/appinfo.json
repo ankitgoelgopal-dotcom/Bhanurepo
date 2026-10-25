@@ -1,0 +1,12 @@
+{
+  "id": "com.example.freebrowser.webos",
+  "version": "1.0.0",
+  "vendor": "FreeBrowser",
+  "type": "web",
+  "main": "index.html",
+  "title": "FreeBrowser",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "uiRevision": 2,
+  "disallowScrollingInFirstScreen": false
+}

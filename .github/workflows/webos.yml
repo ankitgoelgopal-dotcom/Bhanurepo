@@ -1,0 +1,20 @@
+name: Build webOS IPK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["webos/**", ".github/workflows/webos.yml"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install -g @webos-tools/cli
+      - run: ares-package webos -o dist
+      - run: ls -la dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FreeBrowser-webos-ipk
+          path: dist/*.ipk
