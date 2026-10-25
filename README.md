@@ -20,3 +20,6 @@ Install: `adb install app-release.apk`, or copy the APK to your phone and open i
 - Redirects are followed inside the interceptor, so the address bar may show the final URL.
 - Extension support is partial: no `chrome.tabs`/`webRequest` APIs, content scripts run in the top frame only, and background scripts run in a hidden page.
 - Disabling CSP/frame protection removes safeguards against clickjacking and XSS. Use it on sites you trust.
+
+## iPhone (.ipa)
+`ios/` is a SwiftUI/WKWebView port. The *Build iOS IPA* workflow produces an **unsigned** `FreeBrowser.ipa` (artifact `FreeBrowser-ipa`); sign and install it with AltStore or Sideloadly. iOS cannot rewrite response headers (X-Frame-Options/CSP/CORS), so that feature is Android-only; extensions are user scripts with match patterns.
