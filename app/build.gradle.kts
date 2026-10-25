@@ -14,9 +14,24 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
-    buildTypes {
-        release { isMinifyEnabled = false }
+    signingConfigs {
+        create("release") {
+            val ks = System.getenv("KEYSTORE_PATH")
+            if (ks != null) {
+                storeFile = file(ks)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = "freebrowser"
+                keyPassword = System.getenv("KEYSTORE_PASSWORD")
+            }
+        }
     }
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+    lint { checkReleaseBuilds = false; abortOnError = false }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

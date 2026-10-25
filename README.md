@@ -9,10 +9,10 @@ An Android browser (Kotlin, Jetpack Compose, WebView) with header-bypass and a l
 
 ## Build the APK
 **Option A – Android Studio:** open this folder, let it sync, then *Build > Build APK(s)*.
-**Option B – command line** (JDK 17, Android SDK, Gradle 8.7+): `gradle assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`.
-**Option C – GitHub Actions:** the *Build APK* workflow builds on every push; download `FreeBrowser-debug-apk` from the run's artifacts.
+**Option B – command line** (JDK 17, Android SDK, Gradle 8.7+): `gradle assembleRelease (with your own signing key)` → `app/build/outputs/apk/release/app-release.apk`.
+**Option C – GitHub Actions:** the *Build APK* workflow builds on every push; download `FreeBrowser-release-apk` from the run's artifacts.
 
-Install: `adb install app-debug.apk`, or copy the APK to your phone and open it (allow "install unknown apps").
+Install: `adb install app-release.apk`, or copy the APK to your phone and open it (allow "install unknown apps").
 
 ## Limitations
 - Only GET requests can be rewritten; POST/other methods load with original headers.
