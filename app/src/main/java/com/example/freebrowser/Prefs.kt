@@ -9,12 +9,19 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("bypass", true)
         set(v) = sp.edit().putBoolean("bypass", v).apply()
     var home: String
-        get() = sp.getString("home", "https://duckduckgo.com") ?: ""
+        get() = sp.getString("home", "mysearch:home") ?: ""
         set(v) = sp.edit().putString("home", v).apply()
     /** Search URL template; %s is replaced by the encoded query. */
     var search: String
         get() = sp.getString("search", "https://duckduckgo.com/?q=%s") ?: ""
         set(v) = sp.edit().putString("search", v).apply()
+    var appName: String
+        get() = sp.getString("appName", "MySearch") ?: "MySearch"
+        set(v) = sp.edit().putString("appName", v).apply()
+    /** Base URL of your SearXNG server, e.g. http://1.2.3.4:8080 */
+    var searchServer: String
+        get() = sp.getString("server", "") ?: ""
+        set(v) = sp.edit().putString("server", v).apply()
     /** One "Name: value" per line. */
     var headersText: String
         get() = sp.getString("headers", "") ?: ""

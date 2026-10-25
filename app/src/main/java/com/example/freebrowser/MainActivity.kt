@@ -126,7 +126,8 @@ fun TabsScreen(
 fun SettingsScreen(prefs: Prefs, ext: ExtensionManager, onBack: () -> Unit) {
     var bypass by remember { mutableStateOf(prefs.bypass) }
     var home by remember { mutableStateOf(prefs.home) }
-    var search by remember { mutableStateOf(prefs.search) }
+    var server by remember { mutableStateOf(prefs.searchServer) }
+    var appName by remember { mutableStateOf(prefs.appName) }
     var headers by remember { mutableStateOf(prefs.headersText) }
     var msg by remember { mutableStateOf("") }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -146,7 +147,8 @@ fun SettingsScreen(prefs: Prefs, ext: ExtensionManager, onBack: () -> Unit) {
                 }
             }
             item { OutlinedTextField(home, { home = it; prefs.home = it }, label = { Text("Home page") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
-            item { OutlinedTextField(search, { search = it; prefs.search = it }, label = { Text("Search URL (%s = query)") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
+            item { OutlinedTextField(server, { server = it; prefs.searchServer = it }, label = { Text("Search server URL (SearXNG)") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
+            item { OutlinedTextField(appName, { appName = it; prefs.appName = it }, label = { Text("Browser name") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
             item {
                 OutlinedTextField(headers, { headers = it; prefs.headersText = it },
                     label = { Text("Custom request headers (Name: value per line)") },

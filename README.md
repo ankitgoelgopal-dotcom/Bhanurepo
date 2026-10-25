@@ -20,3 +20,6 @@ Install: `adb install app-release.apk`, or copy the APK to your phone and open i
 - Redirects are followed inside the interceptor, so the address bar may show the final URL.
 - Extension support is partial: no `chrome.tabs`/`webRequest` APIs, content scripts run in the top frame only, and background scripts run in a hidden page.
 - Disabling CSP/frame protection removes safeguards against clickjacking and XSS. Use it on sites you trust.
+
+## Your own search engine
+The start page and results page are built into the app and fetch results from **your SearXNG server**. Set it up with `server/README.md`, then enter its URL in Settings -> Search server URL.
