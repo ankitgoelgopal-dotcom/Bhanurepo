@@ -8,7 +8,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.zephyr"
+        applicationId = "com.example.freebrowser"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

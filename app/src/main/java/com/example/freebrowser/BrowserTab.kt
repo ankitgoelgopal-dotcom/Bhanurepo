@@ -8,13 +8,8 @@ import android.webkit.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import java.net.URLEncoder
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.json.JSONObject
-
-const val DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s"
-const val INTERNAL = "https://mysearch.local/"
 
 class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: ExtensionManager) {
     var title by mutableStateOf("New tab")
@@ -26,38 +21,20 @@ class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: Extens
 
     init { configure() }
 
-    private val api = OkHttpClient()
-    private var label = ""
-
-    private fun asUrl(t: String): String? = when {
-        Regex("^[a-zA-Z][a-zA-Z0-9+.-]*://.*").matches(t) || t.startsWith("about:") -> t
-        !t.contains(' ') && (t.contains('.') || t.startsWith("localhost")) -> "https://$t"
-        else -> null
-    }
-
-    fun showStart(note: String = "") {
-        label = ""; title = prefs.appName
-        web.loadDataWithBaseURL(INTERNAL, Pages.start(prefs.appName, note), "text/html", "utf-8", null)
-    }
-
-    /** Address-bar input: empty/home -> start page, URL -> open it, anything else -> search your server. */
-    fun load(input: String) {
+    fun resolve(input: String): String {
         val t = input.trim()
-        if (t.isEmpty() || t == "mysearch:home") { showStart(); return }
-        val u = asUrl(t)
-        if (u != null) web.loadUrl(u, if (prefs.bypass) emptyMap() else prefs.customHeaders())
-        else search(t, 1)
+        return when {
+            t.isEmpty() -> prefs.home
+            Regex("^[a-zA-Z][a-zA-Z0-9+.-]*://.*").matches(t) || t.startsWith("about:") -> t
+            !t.contains(' ') && (t.contains('.') || t.startsWith("localhost")) -> "https://$t"
+            else -> prefs.search.replace("%s", Uri.encode(t))
+        }
     }
 
-    /** Text queries go to DuckDuckGo by default; Settings can override with a URL containing %s. */
-    fun search(q: String, page: Int) {
-        val tpl = prefs.searchServer.trim().ifEmpty { DEFAULT_SEARCH }
-        val encoded = URLEncoder.encode(q, "UTF-8")
-        web.loadUrl(if (tpl.contains("%s")) tpl.replace("%s", encoded) else tpl + encoded)
-    }
-
-    inner class Bridge {
-        @JavascriptInterface fun search(q: String, page: Int) { web.post { if (page <= 1) load(q) else search(q, page) } }
+    fun load(input: String) {
+        val u = resolve(input)
+        // With bypass off, custom headers are attached to the main-frame request only.
+        web.loadUrl(u, if (prefs.bypass) emptyMap() else prefs.customHeaders())
     }
 
     private fun sync() { canBack = web.canGoBack(); canForward = web.canGoForward() }
@@ -80,7 +57,6 @@ class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: Extens
             override fun onProgressChanged(v: WebView, p: Int) { progress = p }
             override fun onReceivedTitle(v: WebView, t: String?) { title = t ?: "" }
         }
-        web.addJavascriptInterface(Bridge(), "App")
         web.webViewClient = Client()
     }
 
@@ -93,16 +69,16 @@ class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: Extens
         )
 
         override fun onPageStarted(v: WebView, u: String, f: Bitmap?) {
-            url = if (u.startsWith(INTERNAL)) label else u; sync()
+            url = u; sync()
             ext.scriptsFor(u, "document_start").forEach { v.evaluateJavascript(it, null) }
         }
 
         override fun onPageFinished(v: WebView, u: String) {
-            url = if (u.startsWith(INTERNAL)) label else u; sync()
+            url = u; sync()
             ext.scriptsFor(u, "document_end").forEach { v.evaluateJavascript(it, null) }
         }
 
-        override fun doUpdateVisitedHistory(v: WebView, u: String, isReload: Boolean) { url = if (u.startsWith(INTERNAL)) label else u; sync() }
+        override fun doUpdateVisitedHistory(v: WebView, u: String, isReload: Boolean) { url = u; sync() }
 
         /**
          * Re-fetches GET requests with OkHttp so response headers can be rewritten before
