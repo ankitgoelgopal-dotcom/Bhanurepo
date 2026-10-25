@@ -9,7 +9,7 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("bypass", true)
         set(v) = sp.edit().putBoolean("bypass", v).apply()
     var home: String
-        get() = sp.getString("home", "mysearch:home") ?: ""
+        get() = sp.getString("home", "https://duckduckgo.com") ?: ""
         set(v) = sp.edit().putString("home", v).apply()
     /** Search URL template; %s is replaced by the encoded query. */
     var search: String

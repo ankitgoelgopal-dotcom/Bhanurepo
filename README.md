@@ -22,4 +22,4 @@ Install: `adb install app-release.apk`, or copy the APK to your phone and open i
 - Disabling CSP/frame protection removes safeguards against clickjacking and XSS. Use it on sites you trust.
 
 ## Your own search engine
-Text queries go to a public SearXNG instance (default `https://searxng.site/search?q=`). Change it in Settings -> Search engine URL. Self-hosting is optional, see `server/README.md`.
+Text queries go to DuckDuckGo by default. Change it in Settings -> Search URL (use %s for the query).

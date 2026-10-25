@@ -13,7 +13,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
-const val DEFAULT_SEARCH = "https://searxng.site"
+const val DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s"
 const val INTERNAL = "https://mysearch.local/"
 
 class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: ExtensionManager) {
@@ -49,11 +49,11 @@ class BrowserTab(ctx: Context, private val prefs: Prefs, private val ext: Extens
         else search(t, 1)
     }
 
-    /** Routes a text query to a public SearXNG instance (Settings can override the base URL). */
+    /** Text queries go to DuckDuckGo by default; Settings can override with a URL containing %s. */
     fun search(q: String, page: Int) {
-        val base = prefs.searchServer.trim().trimEnd('/').ifEmpty { DEFAULT_SEARCH }
+        val tpl = prefs.searchServer.trim().ifEmpty { DEFAULT_SEARCH }
         val encoded = URLEncoder.encode(q, "UTF-8")
-        web.loadUrl("$base/search?q=$encoded" + if (page > 1) "&pageno=$page" else "")
+        web.loadUrl(if (tpl.contains("%s")) tpl.replace("%s", encoded) else tpl + encoded)
     }
 
     inner class Bridge {
