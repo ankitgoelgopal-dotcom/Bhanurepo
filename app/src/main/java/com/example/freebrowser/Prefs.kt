@@ -16,7 +16,7 @@ class Prefs(ctx: Context) {
         get() = sp.getString("search", "https://duckduckgo.com/?q=%s") ?: ""
         set(v) = sp.edit().putString("search", v).apply()
     var appName: String
-        get() = sp.getString("appName", "MySearch") ?: "MySearch"
+        get() = sp.getString("appName", "Zephyr") ?: "Zephyr"
         set(v) = sp.edit().putString("appName", v).apply()
     /** Base URL of your SearXNG server, e.g. http://1.2.3.4:8080 */
     var searchServer: String

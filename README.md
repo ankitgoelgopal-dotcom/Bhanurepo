@@ -1,4 +1,4 @@
-# FreeBrowser
+# Zephyr
 
 An Android browser (Kotlin, Jetpack Compose, WebView) with header-bypass and a lightweight extension loader.
 
