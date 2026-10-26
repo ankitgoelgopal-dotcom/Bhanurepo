@@ -32,3 +32,6 @@ The *Build Linux AppImage* workflow builds `FreeBrowser.AppImage` from `desktop/
 
 ## LG webOS TV (2019 / webOS 4.5)
 `webos/` is a web-app launcher (address bar, search via DuckDuckGo, editable tiles) packaged as an `.ipk` by the *Build webOS IPK* workflow. It navigates the TV's Chromium (v53) to the site you choose; Back returns to the launcher. Header stripping and extensions are not possible on webOS. Install with the LG Developer Mode app + `ares-install`, or webOS Dev Manager.
+
+## Universal JAR (java-app/)
+Swing + FlatLaf starter. Build: `cd java-app && mvn package`; run: `java -jar target/app.jar` (Java 17+). CI artifact: `app-jar`.

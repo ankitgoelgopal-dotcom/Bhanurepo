@@ -1,0 +1,25 @@
+name: Build JAR
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["java-app/**", ".github/workflows/jar.yml"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17, cache: maven }
+      - name: Build universal jar
+        working-directory: java-app
+        run: mvn -B package
+      - name: Verify jar
+        working-directory: java-app/target
+        run: |
+          unzip -p app.jar META-INF/MANIFEST.MF
+          unzip -l app.jar | grep -E "com/example/app/Main.class|com/formdev/flatlaf/FlatLightLaf.class"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: java-app/target/app.jar
