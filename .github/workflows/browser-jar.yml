@@ -1,0 +1,45 @@
+name: Build Browser JAR
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["java-browser/**", ".github/workflows/browser-jar.yml"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17, cache: maven }
+      - name: Build universal jar
+        working-directory: java-browser
+        run: |
+          set +e
+          mvn -B -q package > build.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            grep -E "ERROR|error:" build.log | sort -u | head -15 | while IFS= read -r l; do echo "::error::${l:0:400}"; done
+          fi
+          exit $rc
+      - name: Verify bundled natives
+        working-directory: java-browser/target
+        run: |
+          ls -lh FreeBrowser.jar
+          echo "::notice::JAR size: $(du -h FreeBrowser.jar | cut -f1)"
+          unzip -l FreeBrowser.jar | grep -E "(libglass\.so|glass\.dll|libglass\.dylib|libjfxwebkit\.so|jfxwebkit\.dll|libjfxwebkit\.dylib)$" | awk '{print $4}' | while read l; do echo "::notice::native: $l"; done
+          unzip -p FreeBrowser.jar META-INF/MANIFEST.MF | grep Main-Class
+      - name: Smoke test (Linux, virtual screen)
+        working-directory: java-browser/target
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgtk-3-0t64 libgl1 libxtst6 libxxf86vm1 || sudo apt-get install -y -qq xvfb libgtk-3-0 libgl1 libxtst6 libxxf86vm1
+          set +e
+          out=$(timeout 90 xvfb-run -a java -Dprism.order=sw -jar FreeBrowser.jar --smoke 2>&1)
+          rc=$?
+          echo "$out" | tail -12 | while IFS= read -r l; do echo "::notice::SMOKE: ${l:0:300}"; done
+          echo "::notice::SMOKE exit code $rc"
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FreeBrowser-jar
+          path: java-browser/target/FreeBrowser.jar

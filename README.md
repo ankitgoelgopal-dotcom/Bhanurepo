@@ -35,3 +35,6 @@ The *Build Linux AppImage* workflow builds `FreeBrowser.AppImage` from `desktop/
 
 ## Universal JAR (java-app/)
 Swing + FlatLaf starter. Build: `cd java-app && mvn package`; run: `java -jar target/app.jar` (Java 17+). CI artifact: `app-jar`.
+
+## Browser JAR (java-browser/)
+JavaFX WebView browser in one universal jar (natives for Windows x64, Linux x64, macOS Apple Silicon bundled). Run with `java -jar FreeBrowser.jar` (Java 17+). Tabs, address bar with DuckDuckGo search, settings, and user scripts from `~/.freebrowser/scripts/`. No header stripping (WebView cannot intercept requests).
